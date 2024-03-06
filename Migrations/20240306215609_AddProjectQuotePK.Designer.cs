@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PeopleItTest.Data;
 
@@ -11,9 +12,11 @@ using PeopleItTest.Data;
 namespace PeopleItTest.Migrations
 {
     [DbContext(typeof(MockCrmDbContext))]
-    partial class MockCrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240306215609_AddProjectQuotePK")]
+    partial class AddProjectQuotePK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

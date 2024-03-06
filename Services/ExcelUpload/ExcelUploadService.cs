@@ -25,14 +25,14 @@ namespace PeopleItTest.Services.ExcelUpload
                     {
                         QuoteSentDate = ConvertCellToDate(row.GetCell(0)),
                         Salesperson = ConvertCellToString(row.GetCell(1)),
-                        ProjectName = ConvertCellToString(row.GetCell(1)),
-                        ProjectCode = ConvertCellToString(row.GetCell(1)),
-                        Customer = ConvertCellToString(row.GetCell(1)),
-                        CustomerCity = row.GetCell(1).ToString(),
-                        CustomerState = row.GetCell(1).ToString(),
-                        MarketingCategory = row.GetCell(1).ToString(),
-                        NumberOfQuotes = ConvertCellToInt(row.GetCell(1)),
-                        TotalNet = ConvertCellToDecimal(row.GetCell(1)),
+                        ProjectName = ConvertCellToString(row.GetCell(2)),
+                        ProjectCode = ConvertCellToString(row.GetCell(3)),
+                        Customer = ConvertCellToString(row.GetCell(4)),
+                        CustomerCity = row.GetCell(5)?.ToString(),
+                        CustomerState = row.GetCell(6)?.ToString(),
+                        MarketingCategory = row.GetCell(7)?.ToString(),
+                        NumberOfQuotes = ConvertCellToInt(row.GetCell(8)),
+                        TotalNet = ConvertCellToDecimal(row.GetCell(9)),
                     };
                     quotes.Add(quote);
                 }

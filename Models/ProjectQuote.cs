@@ -4,9 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PeopleItTest.Models
 {
-    [Keyless]
     public class ProjectQuote
     {
+        [Key]
+        public int ProjectQuoteId { get; set; }
         [Required(ErrorMessage = "Quote date is required.")]
         public DateTime QuoteSentDate { get; set; }
 

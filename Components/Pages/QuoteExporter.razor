@@ -1,5 +1,141 @@
-﻿<h3>QuoteExporter</h3>
+﻿@page "/quoteexport"
+@rendermode InteractiveServer
+@using MudBlazor
+@using PeopleItTest.Data
+@using PeopleItTest.Models
+@using PeopleItTest.Services.ExcelUpload
+@inject ISnackbar Snackbar
+@inject MockCrmDbContext dbContext 
+@inject IExcelUploadService excelService
+
+<MudText Typo="Typo.h5">Upload Excel File</MudText>
+<MudFileUpload T="IBrowserFile" OnFilesChanged="ProcessUpload">
+    <ButtonTemplate>
+        <MudButton HtmlTag="label"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    StartIcon="@Icons.Material.Filled.CloudUpload"
+                   for="@context.Id">
+            Upload
+        </MudButton>
+    </ButtonTemplate>
+</MudFileUpload>
+
+@if (files != null)
+{
+    <MudText Typo="@Typo.h6">@files.Count() File@(files.Count() == 1 ? "" : "s"):</MudText>
+    <MudList>
+        @foreach (var file in files)
+        {
+            <MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@file">
+                @file.Name <code>@file.Size bytes</code>
+            </MudListItem>
+        }
+    </MudList>
+}
+
+@if (uploadedQuotes.Count() > 0)
+{
+    <MudTable Items="uploadedQuotes">
+        <HeaderContent>
+            <MudTh>QuoteSentDate</MudTh>
+            <MudTh>Salesperson</MudTh>
+            <MudTh>ProjectName</MudTh>
+            <MudTh>ProjectCode</MudTh>
+            <MudTh>Customer</MudTh>
+            <MudTh>CustomerCity</MudTh>
+            <MudTh>CustomerState</MudTh>
+            <MudTh>MarketingCategory</MudTh>
+            <MudTh>NumberOfQuotes</MudTh>
+            <MudTh>TotalNet</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="QuoteSentDate">@context.QuoteSentDate</MudTd>
+            <MudTd DataLabel="Salesperson">@context.Salesperson</MudTd>
+            <MudTd DataLabel="ProjectName">@context.ProjectName</MudTd>
+            <MudTd DataLabel="ProjectCode">@context.ProjectCode</MudTd>
+            <MudTd DataLabel="Customer">@context.Customer</MudTd>
+            <MudTd DataLabel="CustomerCity">@context.CustomerCity</MudTd>
+            <MudTd DataLabel="CustomerState">@context.CustomerState</MudTd>
+            <MudTd DataLabel="MarketingCategory">@context.MarketingCategory</MudTd>
+            <MudTd DataLabel="NumberOfQuotes">@context.NumberOfQuotes</MudTd>
+            <MudTd DataLabel="TotalNet">@context.TotalNet</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@if (showSaveButton)
+{
+    <MudButton Color="Color.Primary" OnClick="SaveQuotesToDatabase">Save</MudButton>
+}
+
 
 @code {
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    private List<ProjectQuote> uploadedQuotes = new List<ProjectQuote>();
+    private bool showSaveButton = false;
 
+    private async Task ProcessUpload(InputFileChangeEventArgs args)
+    {
+        files = new List<IBrowserFile>();
+        var file = args.File;
+        files.Add(file);
+        showSaveButton = false;
+        if (file != null)
+        {
+            try
+            {
+                var quotes = await excelService.ProcessExcelFile(file);
+
+                var quotesNotInDb = quotes
+                    .GroupJoin(
+                        dbContext.ProjectQuotes, 
+                        quote => new { quote.QuoteSentDate, quote.Customer, quote.ProjectName }, // CompositeKey from the source.
+                        dbQuote => new { dbQuote.QuoteSentDate, dbQuote.Customer, dbQuote.ProjectName }, // CompositeKey from the db.
+                        (quote, dbQuotes) => new { quote, dbQuotes } 
+                    )
+                    .SelectMany(
+                        x => x.dbQuotes.DefaultIfEmpty(), // Left Join.
+                        (x, dbQuote) => new { x.quote, dbQuote }
+                    )
+                    .Where(x => x.dbQuote == null) // Filter for quotes not found in the DB.
+                    .Select(x => x.quote) 
+                    .ToList(); 
+
+
+                // Update the table
+                uploadedQuotes = quotesNotInDb;
+                showSaveButton = true;
+            }
+            catch(Exception ex)
+            {
+                // Display error message to user
+                Snackbar.Add($"Failed to process file: {ex.Message}", Severity.Error);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveQuotesToDatabase()
+    {
+        try
+        {
+            // Add to context and save
+            await dbContext.ProjectQuotes.AddRangeAsync(uploadedQuotes);
+            await dbContext.SaveChangesAsync();
+
+            // Display success message
+            Snackbar.Add("Quotes saved successfully.", Severity.Success);
+
+            // Hide the save button
+            showSaveButton = false;
+        }
+        catch (Exception ex)
+        {
+            // Display error message if saving to the database fails
+            Snackbar.Add($"Failed to save quotes: {ex.Message}", Severity.Error);
+        }
+        StateHasChanged();
+    }
 }
+

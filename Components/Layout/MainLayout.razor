@@ -1,22 +1,42 @@
-﻿@inherits LayoutComponentBase
+﻿@using MudBlazor
+@inherits LayoutComponentBase
 
-<div class="page">
-    <MudThemeProvider />
-    <MudDialogProvider />
-    <MudSnackbarProvider />
-    <div class="sidebar">
+<MudLayout>
+    <MudAppBar Fixed="true" InheritDefaultBreakpoint="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6">PeopleIT - Test</MudText>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Variant="DrawerVariant.Mini">
         <NavMenu />
-    </div>
+    </MudDrawer>
 
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    <MudMainContent>
+        <div class="main-content">
+            <article class="content px-4">
+                @Body
+            </article>
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+
+<MudThemeProvider @rendermode="InteractiveServer" />
+<MudDialogProvider @rendermode="InteractiveServer" />
+<MudSnackbarProvider @rendermode="InteractiveServer" />
 
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
+    <span>An unhandled error has occurred.</span>
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool _drawerOpen = false;
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
+
