@@ -1,5 +1,7 @@
 using PeopleItTest.Components;
 using MudBlazor.Services;
+using PeopleItTest.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
+builder.Services.AddDbContext<MockCrmDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MockCrmConnection")));
 
 var app = builder.Build();
 
