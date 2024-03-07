@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeopleItTest", "PeopleItTest.csproj", "{B331D264-8CC2-43BD-9F40-739E9BC8CF1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeopleItTest", "src\PeopleItTest.csproj", "{B331D264-8CC2-43BD-9F40-739E9BC8CF1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3D66A85A-5768-4342-8A93-80024CC5E9CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +20,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B331D264-8CC2-43BD-9F40-739E9BC8CF1F} = {3D66A85A-5768-4342-8A93-80024CC5E9CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F124BFD0-E15B-496A-8495-5FED9FA60FFB}
