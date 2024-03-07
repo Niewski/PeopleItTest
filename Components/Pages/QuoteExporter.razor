@@ -1,29 +1,41 @@
 ﻿@page "/quoteexport"
-@rendermode InteractiveServer
 @using MudBlazor
 @using PeopleItTest.Data
 @using PeopleItTest.Models
 @using PeopleItTest.Services.ExcelUpload
+@using System.ComponentModel.DataAnnotations
 @inject ISnackbar Snackbar
 @inject MockCrmDbContext dbContext 
 @inject IExcelUploadService excelService
 
-<MudText Typo="Typo.h5">Upload Excel File</MudText>
-<MudFileUpload T="IBrowserFile" OnFilesChanged="ProcessUpload">
-    <ButtonTemplate>
-        <MudButton HtmlTag="label"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    StartIcon="@Icons.Material.Filled.CloudUpload"
-                   for="@context.Id">
-            Upload
+<MudText Class="mt-4 ml-4" Typo="Typo.h4">Upload Excel File</MudText>
+<div class="d-flex align-content-start mt-6 ml-4">
+    <MudFileUpload Class="flex-none mt-0" T="IBrowserFile" Accept=".xlsx" OnFilesChanged="ProcessUpload">
+        <ButtonTemplate>
+            <MudButton Class="py-2"
+                       HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                       for="@context.Id">
+                Upload
+            </MudButton>
+        </ButtonTemplate>
+    </MudFileUpload>
+    @if (showSaveButton)
+    {
+        <MudButton Class="ml-6 px-6 py-0" 
+                   HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save" OnClick="SaveQuotesToDatabase">
+            Save
         </MudButton>
-    </ButtonTemplate>
-</MudFileUpload>
+    }
+</div>
 
-@if (files != null)
+@if (files.Count() > 0)
 {
-    <MudText Typo="@Typo.h6">@files.Count() File@(files.Count() == 1 ? "" : "s"):</MudText>
     <MudList>
         @foreach (var file in files)
         {
@@ -64,11 +76,6 @@
     </MudTable>
 }
 
-@if (showSaveButton)
-{
-    <MudButton Color="Color.Primary" OnClick="SaveQuotesToDatabase">Save</MudButton>
-}
-
 
 @code {
     IList<IBrowserFile> files = new List<IBrowserFile>();
@@ -80,6 +87,7 @@
         files = new List<IBrowserFile>();
         var file = args.File;
         files.Add(file);
+        uploadedQuotes = new List<ProjectQuote>();
         showSaveButton = false;
         if (file != null)
         {
@@ -118,22 +126,47 @@
 
     private async Task SaveQuotesToDatabase()
     {
-        try
+        var validationResults = new List<ValidationResult>();
+        var isValid = true;
+
+        // Validate quotes before attempting to save
+        foreach (var projectQuote in uploadedQuotes)
         {
-            // Add to context and save
-            await dbContext.ProjectQuotes.AddRangeAsync(uploadedQuotes);
-            await dbContext.SaveChangesAsync();
-
-            // Display success message
-            Snackbar.Add("Quotes saved successfully.", Severity.Success);
-
-            // Hide the save button
-            showSaveButton = false;
+            var context = new ValidationContext(projectQuote, serviceProvider: null, items: null);
+            isValid &= Validator.TryValidateObject(projectQuote, context, validationResults, true);
+            if (!isValid)
+            {
+                // Add validation errors to snackbar
+                foreach (var validationResult in validationResults)
+                {
+                    Snackbar.Add($"{projectQuote.QuoteSentDate}-{projectQuote.Customer}-{projectQuote.ProjectName}: {validationResult.ErrorMessage}", Severity.Error);
+                }
+                break;
+            }
         }
-        catch (Exception ex)
+
+        if (isValid)
         {
-            // Display error message if saving to the database fails
-            Snackbar.Add($"Failed to save quotes: {ex.Message}", Severity.Error);
+            try
+            {
+                // Add to context and save
+                await dbContext.ProjectQuotes.AddRangeAsync(uploadedQuotes);
+                await dbContext.SaveChangesAsync();
+
+                // Display success message
+                Snackbar.Add("Quotes saved successfully.", Severity.Success);
+
+                // Clear file list
+                files = new List<IBrowserFile>();
+
+                // Hide the save button
+                showSaveButton = false;
+            }
+            catch (Exception ex)
+            {
+                // Display error message if saving to the database fails
+                Snackbar.Add($"Failed to save quotes: {ex.Message}", Severity.Error);
+            }
         }
         StateHasChanged();
     }

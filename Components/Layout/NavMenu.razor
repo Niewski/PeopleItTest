@@ -1,24 +1,9 @@
 ﻿@using MudBlazor
 
-<MudAppBar Color="Color.Primary" Dense="true">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" Color="Color.Inherit" OnClick="@ToggleDrawer" />
-    <MudText Typo="Typo.h6" Class="mud-toolbar-title">PeopleItTest</MudText>
-</MudAppBar>
+<MudNavMenu>
+    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="" Match="NavLinkMatch.All">Home</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.AddBox" Href="quoteexport">QuoteExporter</MudNavLink>
+</MudNavMenu>
 
-<MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Variant="DrawerVariant.Mini">
-    <MudNavMenu>
-        <MudNavLink Icon="@Icons.Material.Filled.Home" Href="" Match="NavLinkMatch.All">Home</MudNavLink>
-        <MudNavLink Icon="@Icons.Material.Filled.AddBox" Href="quoteexport">QuoteExporter</MudNavLink>
-    </MudNavMenu>
-</MudDrawer>
-
-@code {
-    private bool _drawerOpen = false;
-
-    private void ToggleDrawer()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-}
 
 
