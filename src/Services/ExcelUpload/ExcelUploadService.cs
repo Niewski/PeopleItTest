@@ -47,36 +47,33 @@ namespace PeopleItTest.Services.ExcelUpload
         {
             if (cell == null) throw new ArgumentException("Cell cannot be null");
 
-            // Check if the cell is formatted as a date
-            if (DateUtil.IsCellDateFormatted(cell))
+            try
             {
-                return cell.DateCellValue;
-            }
-            else if (cell.CellType == CellType.Numeric)
-            {
-                // Attempt to treat numeric cells as dates 
-                try
+                // Check if the cell is formatted as a date
+                if (DateUtil.IsCellDateFormatted(cell))
                 {
+                    return cell.DateCellValue;
+                }
+                else if (cell.CellType == CellType.Numeric)
+                {
+                    // Attempt to treat numeric cells as dates 
                     return DateUtil.GetJavaDate(cell.NumericCellValue);
                 }
-                catch
+                else if (cell.CellType == CellType.String)
                 {
-                    throw new FormatException("Failed to convert cell to date");
+                    // Try to parse the date from the string
+                    DateTime parsedDate;
+                    if (DateTime.TryParse(cell.StringCellValue, out parsedDate))
+                    {
+                        return parsedDate;
+                    }
                 }
+                throw new FormatException($"Cell is improperly formatted: {cell}");
             }
-            else if (cell.CellType == CellType.String)
+            catch
             {
-                // Try to parse the date from the string
-                DateTime parsedDate;
-                if (DateTime.TryParse(cell.StringCellValue, out parsedDate))
-                {
-                    return parsedDate;
-                }
+                throw new InvalidDataException($"Failed to convert cell value to DateTime: {cell}");
             }
-
-            // cell cannot be converted to a date
-            throw new FormatException("Failed to convert cell to date");
-
         }
 
         private string ConvertCellToString(ICell cell)
